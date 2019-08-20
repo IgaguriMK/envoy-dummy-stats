@@ -3,9 +3,27 @@ use std::sync::{Arc, Mutex};
 use gotham_derive::StateData;
 
 const BUCKETS_COUNT: usize = 20;
-const LE_VALUES: [f64; BUCKETS_COUNT - 1] = [
-    0.5, 1.0, 5.0, 10.0, 25.0, 50.0, 100.0, 250.0, 500.0, 1000.0, 2500.0, 5000.0, 10000.0, 30000.0,
-    60000.0, 300000.0, 600000.0, 1800000.0, 3600000.0,
+const LE_VALUES: [f64; BUCKETS_COUNT] = [
+    0.5,
+    1.0,
+    5.0,
+    10.0,
+    25.0,
+    50.0,
+    100.0,
+    250.0,
+    500.0,
+    1000.0,
+    2500.0,
+    5000.0,
+    10000.0,
+    30000.0,
+    60000.0,
+    300000.0,
+    600000.0,
+    1800000.0,
+    3600000.0,
+    std::f64::INFINITY,
 ];
 
 #[derive(Debug, Default, Clone, StateData)]
@@ -20,12 +38,14 @@ impl Counter {
         }
     }
 
-    pub fn add(val: f64) {
-        unimplemented!()
+    pub fn add(&self, val: f64) {
+        let mut state = self.inner.as_ref().lock().unwrap();
+        state.add(val);
     }
 
-    pub fn get_state(&self) -> CounterState {
-        unimplemented!()
+    pub fn get_count(&self) -> CounterState {
+        let state = self.inner.as_ref().lock().unwrap();
+        state.clone()
     }
 }
 
@@ -50,6 +70,22 @@ impl CounterState {
         self.sum += val;
         self.buckets.add(val);
     }
+
+    pub fn count(&self) -> usize {
+        self.count
+    }
+
+    pub fn sum(&self) -> f64 {
+        self.sum
+    }
+
+    pub fn buckets<'a>(&'a self) -> BucketsIter<'a> {
+        BucketsIter {
+            buckets: &self.buckets,
+            sum: 0,
+            idx: 0,
+        }
+    }
 }
 
 #[derive(Debug, Default, Clone)]
@@ -69,4 +105,39 @@ impl Buckets {
         }
         self.0[BUCKETS_COUNT - 1] += 1;
     }
+}
+
+#[derive(Debug)]
+pub struct BucketsIter<'a> {
+    buckets: &'a Buckets,
+    sum: usize,
+    idx: usize,
+}
+
+impl<'a> Iterator for BucketsIter<'a> {
+    type Item = BucketCount;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.idx < BUCKETS_COUNT {
+            let le = LE_VALUES[self.idx];
+            let count = self.buckets.0[self.idx];
+            self.sum += count;
+
+            self.idx += 1;
+
+            Some(BucketCount {
+                le,
+                count,
+                sum: self.sum,
+            })
+        } else {
+            None
+        }
+    }
+}
+
+pub struct BucketCount {
+    pub le: f64,
+    pub count: usize,
+    pub sum: usize,
 }
