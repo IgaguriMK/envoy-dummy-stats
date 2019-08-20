@@ -69,7 +69,7 @@ fn w_main() -> Result<(), Error> {
     }
 
     let addr = matches.value_of("addr").unwrap();
-    return run_api(generator, addr);
+    run_api(generator, addr)
 }
 
 fn run_api(generator: Generator, addr: &str) -> Result<(), Error> {
