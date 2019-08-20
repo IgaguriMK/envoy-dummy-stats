@@ -1,9 +1,24 @@
 [package]
 name = "envoy-dummy-stats"
-version = "0.1.0"
-authors = ["Igaguri <igagurimk@gmail.com>"]
 edition = "2018"
+description = "Generate dummy histogram metrics of Envoy."
+version = "0.1.0"
+license = "MIT OR Apache-2.0"
+categories = ["simulation"]
+keywords = []
+authors = ["Igaguri <igagurimk@gmail.com>"]
+readme = "README.md"
+repository = "https://github.com/IgaguriMK/envoy-dummy-stats"
+
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+clap = "2.33.0"
+gotham = "0.4.0"
+gotham_derive = "0.4.0"
+http = "0.1.18"
+hyper = "0.12.33"
+mime = "0.3.13"
+rand = "0.7.0"
+rand_distr = "0.2.1"
