@@ -79,7 +79,7 @@ impl CounterState {
         self.sum
     }
 
-    pub fn buckets<'a>(&'a self) -> BucketsIter<'a> {
+    pub fn buckets(&self) -> BucketsIter {
         BucketsIter {
             buckets: &self.buckets,
             sum: 0,
