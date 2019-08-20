@@ -97,8 +97,8 @@ impl Buckets {
     }
 
     fn add(&mut self, val: f64) {
-        for i in 0..BUCKETS_COUNT - 1 {
-            if val < LE_VALUES[i] {
+        for (i, &le) in LE_VALUES.iter().enumerate() {
+            if val < le {
                 self.0[i] += 1;
                 return;
             }
