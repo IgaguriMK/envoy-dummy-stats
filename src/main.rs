@@ -1,3 +1,4 @@
+pub mod api;
 pub mod counter;
 pub mod dummy;
 pub mod err;
@@ -8,6 +9,7 @@ use std::time::Duration;
 
 use clap::{App, Arg};
 
+use dummy::{start, Generator};
 use err::Error;
 
 fn main() {
@@ -41,6 +43,13 @@ fn w_main() -> Result<(), Error> {
                 .help("Stddev of distribution. (ms)"),
         )
         .arg(
+            Arg::with_name("addr")
+                .short("a")
+                .long("addr")
+                .default_value("0.0.0.0:9901")
+                .help("Listhen address"),
+        )
+        .arg(
             Arg::with_name("test")
                 .long("test")
                 .takes_value(true)
@@ -52,19 +61,30 @@ fn w_main() -> Result<(), Error> {
     let mean: f64 = matches.value_of("mean").unwrap().parse()?;
     let std_dev: f64 = matches.value_of("stddev").unwrap().parse()?;
 
+    let generator = dummy::Generator::new(rate, mean, std_dev)?;
+
     if let Some(run_sec_str) = matches.value_of("test") {
         let run_sec: u64 = run_sec_str.parse()?;
-        return test_run(rate, mean, std_dev, run_sec);
+        return test_run(generator, run_sec);
     }
+
+    let addr = matches.value_of("addr").unwrap();
+    return run_api(generator, addr);
+}
+
+fn run_api(generator: Generator, addr: &str) -> Result<(), Error> {
+    let counter = counter::Counter::new();
+    start(generator, counter.clone());
+
+    api::start_api(addr, counter);
 
     Ok(())
 }
 
-fn test_run(rate: f64, mean: f64, std_dev: f64, run_sec: u64) -> Result<(), Error> {
+fn test_run(generator: Generator, run_sec: u64) -> Result<(), Error> {
     let counter = counter::Counter::new();
-    let generator = dummy::Generator::new(rate, mean, std_dev)?;
+    start(generator, counter.clone());
 
-    dummy::start(generator, counter.clone());
     thread::sleep(Duration::from_secs(run_sec));
     let cnt = counter.get_count();
 
