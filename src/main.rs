@@ -43,6 +43,13 @@ fn w_main() -> Result<(), Error> {
                 .help("Stddev of distribution. (ms)"),
         )
         .arg(
+            Arg::with_name("metric_name")
+                .short("N")
+                .long("name")
+                .default_value("dummy_time_ms")
+                .help("Metric name"),
+        )
+        .arg(
             Arg::with_name("addr")
                 .short("a")
                 .long("addr")
@@ -69,14 +76,15 @@ fn w_main() -> Result<(), Error> {
     }
 
     let addr = matches.value_of("addr").unwrap();
-    run_api(generator, addr)
+    let metric_name = matches.value_of("metric_name").unwrap();
+    run_api(generator, addr, metric_name)
 }
 
-fn run_api(generator: Generator, addr: &str) -> Result<(), Error> {
+fn run_api(generator: Generator, addr: &str, metric_name: &str) -> Result<(), Error> {
     let counter = counter::Counter::new();
     start(generator, counter.clone());
 
-    api::start_api(addr, counter);
+    api::start_api(addr, counter, metric_name.to_owned());
 
     Ok(())
 }
