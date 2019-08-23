@@ -88,8 +88,8 @@ fn stats(state: State) -> (State, Response<Body>) {
         )
         .unwrap();
     }
-    writeln!(&mut w, "envoy_{}_sum {}", metric_name, cnt.sum()).unwrap();
-    writeln!(&mut w, "envoy_{}_count {}", metric_name, cnt.count()).unwrap();
+    writeln!(&mut w, "envoy_{}_sum{{}} {}", metric_name, cnt.sum()).unwrap();
+    writeln!(&mut w, "envoy_{}_count{{}} {}", metric_name, cnt.count()).unwrap();
 
     let res = create_response(&state, StatusCode::OK, TEXT_PLAIN, w);
 
